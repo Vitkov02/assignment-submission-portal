@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# How to Run the Project Locally
 
-## Getting Started
+Follow the steps below to set up and run this project on your local machine.
 
-First, run the development server:
+### Prerequisites
+
+Before starting, ensure that you have the following installed:
+
+1. **Node.js** (v16.x or later): [Download Node.js](https://nodejs.org/)
+2. **Git** (for version control): [Download Git](https://git-scm.com/)
+3. A **code editor** (e.g., [Visual Studio Code](https://code.visualstudio.com/))
+
+### Steps to Set Up Locally
+
+#### 1. Clone the Repository
+
+First, you need to clone the repository to your local machine. Open a terminal and run the following command:
+
+```bash
+git clone <repository-url>
+```
+
+Replace `<repository-url>` with the actual URL of your repository (e.g., `https://github.com/yourusername/yourproject.git`).
+
+Navigate to the project directory:
+
+```bash
+cd yourproject
+```
+
+#### 2. Install Dependencies
+
+Install all the necessary dependencies by running:
+
+```bash
+npm install --force
+```
+
+This will download and install all the required packages listed in the `package.json` file.
+
+
+#### 3. Run the Project
+
+Once dependencies are installed and environment variables are set, you can run the project locally with:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will start the development server. By default, the app should be available at:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### 5. Open the Project in Your Browser
 
-## Learn More
+Open your browser and navigate to `http://localhost:3000`. You should now see the project running locally on your machine.
 
-To learn more about Next.js, take a look at the following resources:
+### Common Commands
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Here are some common commands that you may find useful while developing:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Start the development server**:  
+  ```bash
+  npm run dev
+  ```
 
-## Deploy on Vercel
+- **Build the project for production**:  
+  ```bash
+  npm run build
+  ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Run tests**:  
+  ```bash
+  npm run test
+  ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Run linting**:  
+  ```bash
+  npm run lint
+  ```
+
+- **Format code**:  
+  ```bash
+  npm run format
+  ```
+
+### Troubleshooting
+
+- **Error: "Module not found"**:  
+  Make sure all dependencies are installed correctly by running `npm install --force`. If you still face issues, try deleting the `node_modules` folder and the `package-lock.json` file and running `npm install` again.
+
