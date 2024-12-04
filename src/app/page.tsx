@@ -1,101 +1,187 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+import DropdownButton from './components/DropdownButton'
+import { schema } from './lib/validation'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    github_repo_url: '',
+    assignment_description: '',
+    candidate_level: ''
+  })
+  const [errors, setErrors] = useState<any>({})
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const router = useRouter()
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { id, value } = e.target
+    setFormData((prevData) => ({ ...prevData, [id]: value }))
+
+    const { error } = schema.validate(
+      { ...formData, [id]: value },
+      { abortEarly: false }
+    )
+    if (error) {
+      const errorMessages: any = {}
+      error.details.forEach((err) => {
+        errorMessages[err.path[0]] = err.message
+      })
+      setErrors(errorMessages)
+    } else {
+      setErrors((prevErrors: { [x: string]: any }) => {
+        const { [id]: _, ...rest } = prevErrors
+        return rest
+      })
+    }
+  }
+
+  const handleSelectLevel = (level: string) => {
+    setFormData((prevData) => ({ ...prevData, candidate_level: level }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const { error } = schema.validate(formData, { abortEarly: false })
+    if (error) {
+      const errorMessages: any = {}
+      error.details.forEach((err) => {
+        errorMessages[err.path[0]] = err.message
+      })
+      setErrors(errorMessages)
+      return
+    }
+    setErrors({})
+
+    setLoading(true)
+    try {
+      const res = await fetch(
+        'https://tools.qa.public.ale.ai/api/tools/candidates/assignments',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        }
+      )
+
+      if (!res.ok) {
+        throw new Error('Failed to submit')
+      }
+
+      const queryParams = new URLSearchParams(formData).toString()
+
+      router.push(`/thank-you?${queryParams}`)
+    } catch (error: any) {
+      setErrorMessage(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const isFormValid = () => {
+    const isFilled = Object.values(formData).every(
+      (field) => field.trim() !== ''
+    )
+    const hasNoErrors = Object.keys(errors).length === 0
+    return isFilled && hasNoErrors
+  }
+
+  return (
+    <div className="mt-24 flex flex-col items-center justify-center px-4">
+      <p className="mb-4 text-center text-2xl font-bold text-white md:text-3xl">
+        Assignment Submission Portal
+      </p>
+      <form
+        className="flex w-full max-w-lg flex-col rounded-md bg-gray-100 p-5"
+        onSubmit={handleSubmit}
+      >
+        <label htmlFor="name" className="text-sm font-medium md:text-base">
+          Name
+        </label>
+        <input
+          className={`input mb-4 rounded-md border border-gray-300 p-2 focus:outline-indigo-400 ${errors.name ? '!m-0' : ''}`}
+          type="text"
+          id="name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        {errors.name && (
+          <p className="mb-4 text-sm text-red-500">{errors.name}</p>
+        )}
+
+        <label htmlFor="email" className="text-sm font-medium md:text-base">
+          Email
+        </label>
+        <input
+          className={`input mb-4 rounded-md border border-gray-300 p-2 focus:outline-indigo-400 ${errors.email ? '!m-0' : ''}`}
+          type="text"
+          id="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        {errors.email && (
+          <p className="mb-4 text-sm text-red-500">{errors.email}</p>
+        )}
+
+        <label
+          htmlFor="github_repo_url"
+          className="text-sm font-medium md:text-base"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          GitHub Repository URL
+        </label>
+        <input
+          className={`input mb-4 rounded-md border border-gray-300 p-2 focus:outline-indigo-400 ${errors.github_repo_url ? '!m-0' : ''}`}
+          type="text"
+          id="github_repo_url"
+          value={formData.github_repo_url}
+          onChange={handleChange}
+        />
+        {errors.github_repo_url && (
+          <p className="mb-4 text-sm text-red-500">{errors.github_repo_url}</p>
+        )}
+
+        <DropdownButton onSelectLevel={handleSelectLevel} />
+
+        <label
+          htmlFor="assignment_description"
+          className="mt-4 text-sm font-medium md:text-base"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Assignment Description
+        </label>
+        <textarea
+          className={`input custom-scrollbar mb-4 h-28 resize-none rounded-md border border-gray-300 p-2 focus:outline-indigo-400 ${errors.assignment_description ? '!m-0' : ''}`}
+          id="assignment_description"
+          value={formData.assignment_description}
+          onChange={handleChange}
+        ></textarea>
+        {errors.assignment_description && (
+          <p className="mb-4 text-sm text-red-500">
+            {errors.assignment_description}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          className={`rounded-md p-3 text-white focus:outline-indigo-400 ${loading ? 'bg-indigo-500' : 'bg-indigo-500 hover:bg-indigo-400'} ${!isFormValid() || loading ? 'cursor-not-allowed bg-indigo-300 hover:bg-indigo-300' : ''} `}
+          disabled={loading || !isFormValid()}
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {loading ? 'Submitting...' : 'Submit'}
+        </button>
+        {errorMessage && (
+          <p className="mb-4 mt-2 text-sm text-red-500">{errorMessage}</p>
+        )}
+      </form>
     </div>
-  );
+  )
 }

@@ -1,0 +1,8 @@
+node_modules
+.next
+out
+public
+dist
+*.config.js
+*.config.cjs
+*.d.ts
